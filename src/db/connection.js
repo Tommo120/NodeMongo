@@ -9,6 +9,7 @@ const connection = async (crudFunc, dataObj) => {
         await client.connect();
         const db = client.db("testDB");
         const collection = db.collection("movies");
+        collection.createIndex({title: "text", actor: "text", genre: "text"});
         await crudFunc(collection, dataObj);
         client.close();
     } catch(error) {

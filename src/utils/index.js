@@ -32,7 +32,9 @@ exports.findMovies = async (collection, dataObj) => {
             results.push(...genreResults);
         */
 
-        const results = await collection.find({ $or: [ {title: dataObj}, {actor: dataObj}, {genre: dataObj} ]}).toArray();
+        //const results = await collection.find({ $or: [ {title: dataObj}, {actor: dataObj}, {genre: dataObj} ]}).toArray();
+
+        const results = await collection.find({ $text: { $search: dataObj }}, {score: {$meta: "textScore"}}).toArray();
 
         /*
         const uniqueResults = Array.from(new Set(results.map(a => a._id)))
@@ -52,10 +54,20 @@ exports.findMovies = async (collection, dataObj) => {
     }
 }
 
-exports.updateMovie = async (collection, dataObj) => {
+exports.updateMovie = async (collection, dataObj, key) => {
     try {
-        await collection.updateOne({ title: dataObj.oldTitle }, { $set: {title: dataObj.newTitle}});
-        console.log(`Changed ${dataObj.oldTitle} to ${dataObj.newTitle}`);
+        // Doesn't work properly, fix later
+        const key = dataObj.key;
+        await collection.updateOne({ title: dataObj.title }, { $set: { title: dataObj.data }});
+        console.log(`Updated the  ${dataObj.oldTitle} to ${dataObj.newTitle}`);
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+exports.updateActors = async (collection, dataObj) => {
+    try {
+
     } catch (error) {
         console.log(error);
     }

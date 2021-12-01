@@ -17,11 +17,6 @@ const app = async () => {
     
     switch(command) {
         case "add":
-            /*const newMovie = {
-                title: yargs.argv.title,
-                actor: yargs.argv.actor,
-                genre: yargs.argv.genre
-            };*/
             let movies = [];
             let titles = yargs.argv.title;
             titles.forEach((title, i) => {
@@ -39,9 +34,24 @@ const app = async () => {
             await connection(deleteMovies, yargs.argv.title);
             break;
         case "update":
+            let inputKey;
+            let inputData;
+            if (yargs.argv.replaceTitle) {
+                inputKey = "title";
+                inputData = yargs.argv.replaceTitle;
+            } else if (yargs.argv.replaceActor) {
+                inputKey = "actor";
+                inputData = yargs.argv.replaceActor;
+            } else if (yargs.argv.replaceGenre) {
+                inputKey = "genre";
+                inputData = yargs.argv.replaceGenre;
+            } else {
+                console.log("Invalid command used in conjunction with Update command");
+            }
             const updates = {
-                oldTitle: yargs.argv.title,
-                newTitle: yargs.argv.newTitle
+                title: yargs.argv.title,
+                key: inputKey,
+                data: inputData
             };
             await connection(updateMovie, updates);
             break;
