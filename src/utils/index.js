@@ -17,31 +17,7 @@ exports.listMovies = async (collection) => {
 
 exports.findMovies = async (collection, dataObj) => {
     try {
-        /*
-        const titleResults = await collection.find({ title: dataObj }, { projection: { _id: 1, title: 1, actor: 1, genre: 1}}).toArray();
-        const actorResults = await collection.find({ actor: dataObj }, { projection: { _id: 1, title: 1, actor: 1, genre: 1}}).toArray();
-        const genreResults = await collection.find({ genre: dataObj }, { projection: { _id: 1, title: 1, actor: 1, genre: 1}}).toArray();
-
-        let results = [];
-
-        if(titleResults.length > 0)
-            results.push(...titleResults);
-        if(actorResults.length > 0)
-            results.push(...actorResults);
-        if(genreResults.length > 0)
-            results.push(...genreResults);
-        */
-
-        //const results = await collection.find({ $or: [ {title: dataObj}, {actor: dataObj}, {genre: dataObj} ]}).toArray();
-
         const results = await collection.find({ $text: { $search: dataObj }}, {score: {$meta: "textScore"}}).toArray();
-
-        /*
-        const uniqueResults = Array.from(new Set(results.map(a => a._id)))
-            .map(_id => {
-                return results.find(a => a._id === _id)
-            });
-        */
 
         if (results.length > 0)
             results.forEach((result) => {
@@ -54,12 +30,13 @@ exports.findMovies = async (collection, dataObj) => {
     }
 }
 
-exports.updateMovie = async (collection, dataObj, key) => {
+exports.updateMovie = async (collection, dataObj) => {
     try {
-        // Doesn't work properly, fix later
-        const key = dataObj.key;
-        await collection.updateOne({ title: dataObj.title }, { $set: { title: dataObj.data }});
-        console.log(`Updated the  ${dataObj.oldTitle} to ${dataObj.newTitle}`);
+        const replacementData = {};
+        replacementData[dataObj.key] = dataObj.data;
+
+        await collection.updateOne({ title: dataObj.title }, { $set: replacementData });
+        console.log(`The movie ${dataObj.title} had it's ${dataObj.key} updated to ${dataObj.data}`);
     } catch (error) {
         console.log(error);
     }
@@ -67,7 +44,8 @@ exports.updateMovie = async (collection, dataObj, key) => {
 
 exports.updateActors = async (collection, dataObj) => {
     try {
-
+        const updatedEntries = await collection.updateMany({ actor: dataObj.actor }, { $set: { actor: dataObj.newActor }});
+        console.log(`${updatedEntries.modifiedCount} instances of ${dataObj.actor} were updated to ${dataObj.newActor}`);
     } catch (error) {
         console.log(error);
     }

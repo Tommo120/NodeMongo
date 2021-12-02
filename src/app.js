@@ -1,10 +1,10 @@
 const connection = require("./db/connection");
 const yargs = require("yargs");
-const { addMovies, listMovies, findMovies, updateMovie, deleteMovies } = require("./utils");
+const { addMovies, listMovies, findMovies, updateMovie, updateActors, deleteMovies } = require("./utils");
 
 const command = process.argv[2];
 
-class movie {
+class Movie {
     constructor(title, actor, genre) {
         this.title = title;
         this.actor = actor;
@@ -14,14 +14,17 @@ class movie {
 
 const app = async () => {
 
-    
-    switch(command) {
+    switch(command.toLowerCase()) {
         case "add":
             let movies = [];
             let titles = yargs.argv.title;
-            titles.forEach((title, i) => {
-                movies.push(new movie(title, yargs.argv.actor[i], yargs.argv.genre[i]));
-            });
+            if(Array.isArray(titles)) {
+                titles.forEach((title, i) => {
+                    movies.push(new Movie(title, yargs.argv.actor[i], yargs.argv.genre[i]));
+                });
+            } else {
+                movies.push(new Movie(yargs.argv.title, yargs.argv.actor, yargs.argv.genre));
+            }
             await connection(addMovies, movies);
             break;
         case "list":
@@ -54,6 +57,10 @@ const app = async () => {
                 data: inputData
             };
             await connection(updateMovie, updates);
+            break;
+        case "updateactors":
+            const actorUpdates = { actor: yargs.argv.actor, newActor: yargs.argv.newActor };
+            await connection(updateActors, actorUpdates);
             break;
         default:
             console.log("Invalid Command");
